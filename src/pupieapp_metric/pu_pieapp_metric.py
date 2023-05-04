@@ -31,7 +31,7 @@ class PUPieAppMetric(Metric):
         self._metrics = {}
 
     def update_state(self,
-                     image_name: str,
+                    #  image_name: str,
                      source_image: Array,
                      compressed_image: Array):
         """
@@ -44,10 +44,12 @@ class PUPieAppMetric(Metric):
         :param compressed_image: Compressed image.
         :type compressed_image: Array
         """
+        source_image = source_image.numpy()
+        compressed_image = compressed_image.numpy()
         source_image_processed = self._process_image(source_image)
         compressed_image_processed = self._process_image(compressed_image)
         with pt.no_grad():
-            self._metrics[image_name] = self._compute_score(source_image_processed=source_image_processed,
+            self._metrics["image_name"] = self._compute_score(source_image_processed=source_image_processed,
                                                             compressed_image_processed=compressed_image_processed)
 
     def result(self) -> Dict[str, Tensor]:

@@ -27,5 +27,5 @@ output_layer = Conv2D(3, (3,3), padding='same', name='output_layer')(upsamp_laye
 model = Model(input_layer, output_layer)
 model.summary()
 
-model.compile(optimizer='adam', loss='mse', metrics=[PUPieAppMetric()])
+model.compile(optimizer='adam', loss='mse', run_eagerly=True, metrics=[PUPieAppMetric()])
 encoder = Model(inputs=model.input, outputs=model.get_layer('code_layer').output)
