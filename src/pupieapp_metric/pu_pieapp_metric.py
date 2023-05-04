@@ -6,7 +6,7 @@ from tensorflow.python.keras.metrics import Metric
 from tensorflow.python.trackable.data_structures import NoDependency
 import torch as pt
 
-from pu_pieapp.models.common import PUPieAPP
+from .pu_pieapp.models.common import PUPieAPP
 
 
 class PUPieAppMetric(Metric):
