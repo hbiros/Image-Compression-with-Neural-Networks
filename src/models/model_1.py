@@ -17,10 +17,13 @@ unconv_layer_0 = Conv2DTranspose(8, (3,3), padding='same', activation='relu', na
 upsamp_layer_1 = UpSampling2D(pool_factor, name='upsamp_layer_1')(unconv_layer_0)
 unconv_layer_1 = Conv2DTranspose(8, (3,3), activation='relu', padding='same', name='unconv_layer_1')(upsamp_layer_1)
 upsamp_layer_2 = UpSampling2D(pool_factor, name='upsamp_layer_2')(unconv_layer_1)
-unconv_layer_2 = Conv2DTranspose(16, (3,3), activation='relu', padding='same', name='unconv_layer_2')(upsamp_layer_2)
+unconv_layer_2 = Conv2DTranspose(16, (3,3), activation='sigmoid', padding='same', name='unconv_layer_2')(upsamp_layer_2)
 upsamp_layer_3 = UpSampling2D(pool_factor, name='upsamp_layer_3')(unconv_layer_2)
 
 output_layer = Conv2D(3, (3,3), padding='same', name='output_layer')(upsamp_layer_3)
 
 model = Model(input_layer, output_layer)
 model.summary()
+
+model.compile(optimizer='adam', loss='mse')
+encoder = Model(inputs=model.input, outputs=model.get_layer('code_layer').output)

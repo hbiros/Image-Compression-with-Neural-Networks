@@ -161,3 +161,6 @@ cython_debug/
 
 # PU-PieApp weights
 pupieapp_weights.pt
+
+# Model training
+cats/

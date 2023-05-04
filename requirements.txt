@@ -5,3 +5,5 @@ torch
 pandas
 scipy
 tensorflow
+opencv-python
+keras
