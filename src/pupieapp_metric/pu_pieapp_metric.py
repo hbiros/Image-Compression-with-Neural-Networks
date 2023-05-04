@@ -1,6 +1,4 @@
-from typing import Dict
-
-from imageio.core.util import Array, asarray
+from numpy import array, float32
 from tensorflow import Tensor
 from tensorflow.python.keras.metrics import Metric
 from tensorflow.python.trackable.data_structures import NoDependency
@@ -28,56 +26,60 @@ class PUPieAppMetric(Metric):
         super().__init__(name=name)
         self._prepare_network(weights_path=weights_path)
         self._set_image_parameters()
-        self._metrics = {}
+        self._metric_list = []
 
     def update_state(self,
-                    #  image_name: str,
-                     source_image: Array,
-                     compressed_image: Array):
+                     source_image: Tensor,
+                     compressed_image: Tensor,
+                     sample_weight = None):
         """
-        Method used to update dictionary storing metric values.
+        Method used to update metric state.
 
-        :param image_name: Name of image that will be used to check its PUPieAPP quality score.
-        :type image_name: str
-        :param source_image: Source image (before compression).
-        :type source_image: Array
-        :param compressed_image: Compressed image.
-        :type compressed_image: Array
+        :param source_image: Tensor representing source image (before compression).
+        :type source_image: tf.Tensor
+        :param compressed_image: Tensor representing compressed image.
+        :type compressed_image: tf.Tensor
+        :param sample_weight: Placeholder for sample_weight (required parameter for update_state).
+        :type sample_weight: None
         """
-        source_image = source_image.numpy()
-        compressed_image = compressed_image.numpy()
-        source_image_processed = self._process_image(source_image)
-        compressed_image_processed = self._process_image(compressed_image)
-        with pt.no_grad():
-            self._metrics["image_name"] = self._compute_score(source_image_processed=source_image_processed,
-                                                            compressed_image_processed=compressed_image_processed)
+        source_images = [array(image) for image in source_image.numpy().tolist()]
+        compressed_images = [array(image) for image in compressed_image.numpy().tolist()]
+        results = []
+        for i in range(len(source_images)):
+            source_image_processed = self._process_image(source_images[i])
+            compressed_image_processed = self._process_image(compressed_images[i])
+            with pt.no_grad():
+                results.append(self._compute_score(source_image_processed=source_image_processed,
+                                                   compressed_image_processed=compressed_image_processed))
+        average_pupieapp_score = sum(results)/len(results)
+        self._metric_list.append(average_pupieapp_score)
 
-    def result(self) -> Dict[str, Tensor]:
+    def result(self) -> float32:
         """
         Method that returns dictionary holding metric values.
 
-        :return: Dictionary with pairs image_name: metric_value.
-        :rtype: Dict[str, Tensor]
+        :return: Metric value.
+        :rtype: float32
         """
-        return self._metrics
+        return self._metric_list
 
     def _process_image(self,
-                       image: Array) -> pt.Tensor:
+                       image: array) -> pt.Tensor:
         """
         Method used to process loaded image and create pytorch tensor from it.
 
-        :param image: Image loaded by imageio.imread.
-        :type image: Array
+        :param image: Numpy array representing input image.
+        :type image: numpy.array
         :return: Tensor that represents processed image.
         :rtype: pt.Tensor
         """
-        return pt.from_numpy(asarray(image)) \
+        return pt.from_numpy(image) \
             .permute(2, 0, 1) \
             .unsqueeze(0)
 
     def _compute_score(self,
                        source_image_processed: pt.Tensor,
-                       compressed_image_processed: pt.Tensor) -> Tensor:
+                       compressed_image_processed: pt.Tensor) -> float32:
         """
         Method used to compute PUPieApp quality score.
 
@@ -86,7 +88,7 @@ class PUPieAppMetric(Metric):
         :param compressed_image_processed: Tensor representing compressed image.
         :type compressed_image_processed: pt.Tensor
         :return: PUPieApp quality score.
-        :rtype: float
+        :rtype: numpy.float32
         """
         return self._network(img=source_image_processed,
                              ref=compressed_image_processed,
@@ -94,7 +96,7 @@ class PUPieAppMetric(Metric):
                              lum_bottom=self._lum_bottom,
                              lum_top=self._lum_top,
                              stride=self._stride) \
-            .numpy()[0][0]
+                   .numpy()[0][0]
 
     def _set_image_parameters(self,
                               dynamic_range: str = 'sdr',
