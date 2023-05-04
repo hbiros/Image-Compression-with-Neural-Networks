@@ -9,7 +9,7 @@ import torch as pt
 from pu_pieapp.models.common import PUPieAPP
 
 
-class PUPieAppHandler(Metric):
+class PUPieAppMetric(Metric):
     """
     Class responsible for computing PUPieAPP quality score.
     """
@@ -18,7 +18,7 @@ class PUPieAppHandler(Metric):
                  name: str = "PU_PieApp score",
                  weights_path: str = "./pupieapp_weights.pt"):
         """
-        PUPieAPPHandler class constructor that prepares network that will be used to compute metric and sets up parameters for images when doing so.
+        PUPieAPPMetric class constructor that prepares network that will be used to compute metric and sets up parameters for images when doing so.
 
         :param name: Metric name.
         :type name: str
