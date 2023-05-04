@@ -1,6 +1,4 @@
-import numpy as np
 import torch as pt
-import pandas as pd
 import torch.nn as nn
 import torch.nn.functional as F
 
@@ -135,8 +133,7 @@ class PUTransformer(nn.Module):
         self.epsilon = 1e-8
         
     def forward(self, im, im_type='sdr', lum_top=100, lum_bottom=0.5):
-        
-        im = self.apply_disp_model( im,im_type, lum_top=100, lum_bottom=0.5)
+        im = self.apply_disp_model(im, im_type, lum_top=lum_top, lum_bottom=lum_bottom).float()
         im = self.clamp_image(im)
         im = self.apply_pu(im)
         im = self.scale(im)
@@ -146,7 +143,7 @@ class PUTransformer(nn.Module):
         if im_type == 'hdr':
             return im
         else:
-            return (lum_top - lum_bottom) * ((im/255.0)**2.2) + lum_bottom
+            return (lum_top - lum_bottom) * ((im/255.0).cfloat()**2.2) + lum_bottom
         
 
     def clamp_image(self,im):
