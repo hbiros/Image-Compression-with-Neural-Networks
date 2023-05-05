@@ -1,46 +1,44 @@
+import os
+
 from numpy import array, float32
-from tensorflow import Tensor
-from tensorflow.python.keras.metrics import Metric
+import tensorflow as tf
 from tensorflow.python.trackable.data_structures import NoDependency
 import torch as pt
 
 from .pu_pieapp.models.common import PUPieAPP
 
 
-class PUPieAppMetric(Metric):
+class PUPieAppMetric(tf.keras.metrics.Metric):
     """
     Class responsible for computing PUPieAPP quality score.
     """
 
-    def __init__(self,
-                 name: str = "PU_PieApp score",
-                 weights_path: str = "./pupieapp_weights.pt"):
+    def __init__(self):
         """
-        PUPieAPPMetric class constructor that prepares network that will be used to compute metric and sets up parameters for images when doing so.
-
-        :param name: Metric name.
-        :type name: str
-        :param weights_path: Path pointing to file with weights that were used to train PUPieAPP network.
-        :type weights_path: str
+        PUPieAPPMetric class constructor that prepares network that will be used to compute metric and sets up 
+        parameters for images when doing so.
         """
-        super().__init__(name=name)
-        self._prepare_network(weights_path=weights_path)
+        super().__init__(name="PU_PieApp score")
+        self._weight_path = self._find_weights()
+        self._prepare_network()
         self._set_image_parameters()
         self._metric_list = []
 
     def update_state(self,
-                     source_image: Tensor,
-                     compressed_image: Tensor,
+                     source_image: tf.Tensor,
+                     compressed_image: tf.Tensor,
                      sample_weight = None):
         """
         Method used to update metric state.
 
-        :param source_image: Tensor representing source image (before compression).
+        :param source_image: Tensorflow tensor representing source image (before compression).
         :type source_image: tf.Tensor
-        :param compressed_image: Tensor representing compressed image.
+        :param compressed_image: Tensorflow tensor representing compressed image.
         :type compressed_image: tf.Tensor
         :param sample_weight: Placeholder for sample_weight (required parameter for update_state).
         :type sample_weight: None
+        :return: None
+        :rtype: None
         """
         source_images = [array(image) for image in source_image.numpy().tolist()]
         compressed_images = [array(image) for image in compressed_image.numpy().tolist()]
@@ -56,12 +54,14 @@ class PUPieAppMetric(Metric):
 
     def result(self) -> float32:
         """
-        Method that returns dictionary holding metric values.
+        Method that returns most recently added metric score. In order to get range of values 
+        (like list of scores obtained across epochs),  model.history.history['(val_)PU_PieApp score'] 
+        should be called.
 
         :return: Metric value.
         :rtype: float32
         """
-        return self._metric_list
+        return self._metric_list[-1]
 
     def _process_image(self,
                        image: array) -> pt.Tensor:
@@ -70,7 +70,7 @@ class PUPieAppMetric(Metric):
 
         :param image: Numpy array representing input image.
         :type image: numpy.array
-        :return: Tensor that represents processed image.
+        :return: Pytorch tensor representing processed image.
         :rtype: pt.Tensor
         """
         return pt.from_numpy(image) \
@@ -83,9 +83,9 @@ class PUPieAppMetric(Metric):
         """
         Method used to compute PUPieApp quality score.
 
-        :param source_image_processed: Tensor representing source image (before compression).
+        :param source_image_processed: Pytorch tensor representing source image (before compression).
         :type source_image_processed: pt.Tensor
-        :param compressed_image_processed: Tensor representing compressed image.
+        :param compressed_image_processed: Pytorch tensor representing compressed image.
         :type compressed_image_processed: pt.Tensor
         :return: PUPieApp quality score.
         :rtype: numpy.float32
@@ -104,7 +104,8 @@ class PUPieAppMetric(Metric):
                               lum_top: float = 100,
                               stride: int = 32):
         """
-        Method called by class constructor to set up image parameter values used when evaluating PUPieAPP metric value.
+        Method called by class constructor to set up image parameter values used when evaluating 
+        PUPieAPP metric value.
 
         :param dynamic_range: SDR or HDR.
         :type dynamic_range: str
@@ -114,25 +115,37 @@ class PUPieAppMetric(Metric):
         :type lum_top: float
         :param stride: Size of windows used when sampling image patches.
         :type stride: int
+        :return: None
+        :rtype: None
         """
         self._dynamic_range = dynamic_range
         self._lum_bottom = lum_bottom
         self._lum_top = lum_top
         self._stride = stride
 
-    def _prepare_network(self,
-                         weights_path: str):
+    def _prepare_network(self):
         """
         Method called by class constructor to set up network used for evaluating PUPieAPP metric values.
 
-        :param weights_path: Path pointing to file with weights that were used to train PUPieAPP network.
-        :type weights_path: str
+        :return: None
+        :rtype: None
         """
         if pt.cuda.is_available():
             self._map_location = 'cuda:0'
         else:
             self._map_location = 'cpu'
-        self._state = NoDependency(pt.load(weights_path,
+        self._state = NoDependency(pt.load(self._weight_path, 
                                            map_location=self._map_location))
         self._network = PUPieAPP(state=self._state)
         self._network.eval()
+
+    def _find_weights(self) -> str:
+        """
+        Method called by class constructor in order to find path to pytorch weights. 
+
+        :return: Path to pupieapp_weights.pt file.
+        :rtype: str
+        """
+        for root, dirs, files in os.walk('.'):
+            if 'pupieapp_weights.pt' in files:
+                return root + "\pupieapp_weights.pt"
