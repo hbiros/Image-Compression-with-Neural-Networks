@@ -164,3 +164,6 @@ pupieapp_weights.pt
 
 # Model training
 cats/
+
+# data
+data/
