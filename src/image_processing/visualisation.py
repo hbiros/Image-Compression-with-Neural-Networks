@@ -8,4 +8,3 @@ def show_data(x, n=5, height=64, width=64, title=""):
         ax.get_xaxis().set_visible(False)
         ax.get_yaxis().set_visible(False)
     plt.suptitle(title, fontsize=16)
-    plt.show()
