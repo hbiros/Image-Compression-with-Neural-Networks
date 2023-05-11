@@ -1,5 +1,4 @@
 from models.model_1 import model, encoder
-import matplotlib.pyplot as plt
 from image_processing.prepare_data import load_data
 from image_processing.visualisation import show_data
 
@@ -11,6 +10,4 @@ if __name__ == "__main__":
   print(encoded_cats.shape)
   reconstructed_cats = model.predict(x_test)
   print(reconstructed_cats.shape)
-  show_data(x_test, title="encoded cats")
-  show_data(reconstructed_cats, title="reconstructed cats")
-  plt.show()
+  show_data(x_test, reconstructed_cats)
