@@ -1,5 +1,6 @@
 from keras.layers import Input, Conv2D, MaxPooling2D, UpSampling2D, Conv2DTranspose
 from keras.models import Model
+import keras
 
 from pupieapp_metric.pu_pieapp_metric import PUPieAppMetric
 
@@ -27,5 +28,6 @@ output_layer = Conv2D(3, (3,3), padding='same', name='output_layer')(upsamp_laye
 model = Model(input_layer, output_layer)
 model.summary()
 
-model.compile(optimizer='adam', loss='mse', run_eagerly=True, metrics=[PUPieAppMetric()])
+opt = keras.optimizers.Adam(learning_rate=0.01)
+model.compile(optimizer=opt, loss='mse', run_eagerly=True, metrics=[PUPieAppMetric()])
 encoder = Model(inputs=model.input, outputs=model.get_layer('code_layer').output)
