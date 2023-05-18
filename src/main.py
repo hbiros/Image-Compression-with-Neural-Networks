@@ -32,6 +32,7 @@ def split_and_merge_image(image_name):
             printProgressBar(i+1, length, prefix="Progress", suffix="Complete", length=100)
             reconstructed.append(model.predict(fragment))
 
+        np.clip(reconstructed, 0, 1)
         output_width = cropped_image.width
         output_height = cropped_image.height
         merged_image = Image.new('RGB', (output_width, output_height))

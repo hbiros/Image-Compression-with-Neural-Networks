@@ -1,6 +1,7 @@
 from models.model_1 import model, encoder
 from image_processing.prepare_data import load_data
 from image_processing.visualisation import show_data
+import numpy as np 
 
 if __name__ == "__main__":
   x_test, x_train = load_data(train_data="data/cat_faces_train", test_data="data/cat_faces_test")
@@ -9,6 +10,7 @@ if __name__ == "__main__":
   encoded_cats = encoded_cats.reshape(len(encoded_cats),-1)
   print(encoded_cats.shape)
   reconstructed_cats = model.predict(x_test)
+  np.clip(reconstructed_cats, 0, 1)
   print(reconstructed_cats.shape)
   show_data(x_test, reconstructed_cats)
   ans = input("Save model? (y/n): ").upper()
