@@ -28,9 +28,10 @@ def split_and_merge_image(image_name):
         reconstructed = []
         model = keras.models.load_model("./saved_model", custom_objects={"PUPieAppMetric": PUPieAppMetric()})
         
-        for i, fragment in enumerate(fragments_array):
-            printProgressBar(i+1, length, prefix="Progress", suffix="Complete", length=100)
-            reconstructed.append(model.predict(fragment))
+#         for i, fragment in enumerate(fragments_array):
+#             printProgressBar(i+1, length, prefix="Progress", suffix="Complete", length=100)
+#             reconstructed.append(model.predict(fragment))
+        reconstructed = model.predict(fragments_array)
 
         np.clip(reconstructed, 0, 1)
         output_width = cropped_image.width
