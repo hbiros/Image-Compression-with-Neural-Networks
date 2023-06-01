@@ -31,6 +31,8 @@ def train(model, epochs, batch_size):
     from models.model_1 import model, encoder 
   elif(model == 2):
     from models.model_2 import model, encoder
+  elif(model == 3):
+    from models.model_3 import model, encoder
   else:
       raise ValueError('Model {} does not exits'.format(model))  
   
