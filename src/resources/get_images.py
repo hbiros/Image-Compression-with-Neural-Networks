@@ -1,56 +1,79 @@
-from wand.image import Image
+from PIL import Image
 import gdown
 import zipfile
-import glob
-import cv2
 import numpy as np
 import os
-from numpy import asarray
+import click 
 
-#download files from google drive
-url = "https://drive.google.com/file/d/16250k3Ju0Eu14ZcCP3QrswK5shNDcCng/view?usp=sharing"
-output = 'images.zip'
-gdown.download(url,output,quiet=False, fuzzy=True)
+# Print iterations progress
+def printProgressBar (iteration, total, prefix = '', suffix = '', decimals = 1, length = 100, fill = '█', printEnd = "\r"):
+    """
+    Call in a loop to create terminal progress bar
+    @params:
+        iteration   - Required  : current iteration (Int)
+        total       - Required  : total iterations (Int)
+        prefix      - Optional  : prefix string (Str)
+        suffix      - Optional  : suffix string (Str)
+        decimals    - Optional  : positive number of decimals in percent complete (Int)
+        length      - Optional  : character length of bar (Int)
+        fill        - Optional  : bar fill character (Str)
+        printEnd    - Optional  : end character (e.g. "\r", "\r\n") (Str)
+    """
+    percent = ("{0:." + str(decimals) + "f}").format(100 * (iteration / float(total)))
+    filledLength = int(length * iteration // total)
+    bar = fill * filledLength + '-' * (length - filledLength)
+    print(f'\r{prefix} |{bar}| {percent}% {suffix}', end = printEnd)
+    # Print New Line on Complete
+    if iteration == total: 
+        print()
 
-with zipfile.ZipFile('images.zip', 'r') as zip_ref:
-    zip_ref.extractall("")
+def get_data():
+    #download files from google drive
+    url = "https://drive.google.com/file/d/16250k3Ju0Eu14ZcCP3QrswK5shNDcCng/view?usp=sharing"
+    output = 'images.zip'
+    
 
-#split images into 64x64 tiles
-os.mkdir("output")
-print(os.listdir('images'))
-files = os.listdir('images')
-file_num = 0
-for name in files:
-    file_num +=1
-    os.mkdir("output/image{0}".format(file_num))
-    with Image(filename="images/{0}".format(name)) as image:
-        num = 0
-        chunk_size = 64
-        for i in range(0,image.width,chunk_size):
-            for j in range(0,image.height,chunk_size):
-                if (i+chunk_size>image.width):
-                    continue
-                if (j+chunk_size>image.height):
-                    continue
-                num += 1
-                with image[i:i + chunk_size, j:j + chunk_size] as chunk:
-                    chunk.save(filename='output/image{0}/image_{1}.jpg'.format(file_num,num))
+    if not os.path.isdir(output.replace(".zip", "")):
+        print("Downloading images from google drive")
+        gdown.download(url, output, quiet=False, fuzzy=True)
+        with zipfile.ZipFile('images.zip', 'r') as zip_ref:
+            zip_ref.extractall("")
+    
+    chunk_size = 64
+    fragments = []
+    images = os.listdir('images')
+    length = len(images)
 
-#images to array
-files = os.listdir('images')
-output = []
-dir_num = 0
-for name in files:
-    dir_num += 1
-    file = 'output/image{0}/*.jpg'.format(dir_num)
-    glob.glob(file)
-    # Using List Comprehension to read all images
-    images = [asarray(cv2.imread(image)) for image in glob.glob(file)]
-    images = np.array(images)
-    print(images.shape)
-    output.append(images)
+    print("Fragmenting images...")
+    for i, image in enumerate(images):
+        printProgressBar(i+1, length, prefix="Progress", suffix="Complete", length=100)
+        img = Image.open(os.path.join(output.replace(".zip", "") ,image))
+        width, height = img.size
 
-arr = np.asarray(output, dtype=object)
-print(arr.shape)
+        chunks_per_width = (width // chunk_size)
+        crop_width = chunks_per_width * chunk_size
+        
+        chunks_per_height = (height // chunk_size)
+        crop_height = chunks_per_height * chunk_size
+        
+        cropped_image = img.crop((0, 0, crop_width, crop_height))
+        
 
+        for i in range(0, cropped_image.width, chunk_size):
+            for j in range(0, cropped_image.height, chunk_size):
+                fragment = cropped_image.crop((i, j, i + chunk_size, j + chunk_size))
+                fragments.append(np.array(fragment))
+        
+    fragments = np.array(fragments)
+    fragments = fragments / 255.0
+    
+    print("Number of fragments in the train dataset: {}".format(fragments.shape[0]))
 
+    if not os.path.isdir('data'):
+        os.mkdir('data')
+
+    fragments.tofile(os.path.join(os.getcwd(), 'data/train_fragments'))
+    print("Dataset saved in the {}".format(os.path.join(os.getcwd(), 'data')))
+
+if __name__ == "__main__":
+    get_data()
