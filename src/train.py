@@ -35,7 +35,21 @@ from keras.callbacks import CSVLogger
               prompt='Save model', 
               is_flag=True
               )
-def train(model, epochs, batch_size, save):
+@click.option(
+              '-t',
+              '--train_data',
+              prompt='Train dataset', 
+              default="data/train_fragments",
+              type=str
+              )
+@click.option(
+              '-r',
+              '--ratio',
+              prompt='Split ratio', 
+              default=0.1, 
+              type=float
+              )
+def train(model, epochs, batch_size, save, train_data, ratio):
 
   if(model == 1):
     from models.model_1 import model, encoder 
@@ -46,21 +60,21 @@ def train(model, epochs, batch_size, save):
   else:
     raise ValueError('Model {} does not exits'.format(model))  
   
-  x_test, x_train = load_data(train_data="data/cat_faces_train", test_data="data/cat_faces_test")
+  x_train = load_data(train_data=train_data)
   
   time = datetime.now().strftime("%H_%M_%S")
   log_name = 'log_' + time + '.csv'
   csv_logger = CSVLogger(log_name, append=True, separator=',')
   
-  history = model.fit(x_train, x_train, epochs=epochs, batch_size=batch_size, validation_data=(x_test, x_test), callbacks=[csv_logger])
+  history = model.fit(x_train, x_train, epochs=epochs, shuffle=True, batch_size=batch_size, validation_split=ratio, callbacks=[csv_logger])
   
-  encoded_cats = encoder.predict(x_test)
-  encoded_cats = encoded_cats.reshape(len(encoded_cats),-1)
-  print(encoded_cats.shape)
-  reconstructed_cats = model.predict(x_test)
-  np.clip(reconstructed_cats, 0, 1)
-  print(reconstructed_cats.shape)
-  show_data(x_test, reconstructed_cats)
+  encoded_fragments = encoder.predict(x_train)
+  encoded_fragments = encoded_fragments.reshape(len(encoded_fragments),-1)
+  
+  reconstructed_fragments = model.predict(x_train)
+  np.clip(reconstructed_fragments, 0, 1)
+
+  show_data(x_train, reconstructed_fragments)
 
   if save:
     model_name="model_"+time

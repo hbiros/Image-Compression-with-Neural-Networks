@@ -24,10 +24,9 @@ def printProgressBar (iteration, total, prefix = '', suffix = '', decimals = 1, 
     if iteration == total: 
         print()
 
-def load_data(train_data, test_data, shape=(64,64,3)):
+def load_data(train_data, shape=(64,64,3)):
   x_train = np.fromfile(train_data).reshape(-1, shape[0], shape[1], shape[2])
-  x_test = np.fromfile(test_data).reshape(-1, shape[0], shape[1], shape[2])
-  return x_train, x_test
+  return x_train
 
 if __name__ == "__main__":
   
@@ -57,5 +56,5 @@ if __name__ == "__main__":
   if not os.path.isdir('data'):
     os.mkdir('data')
 
-  x_train.tofile(os.path.join(os.getcwd(), 'data/cat_faces_train'))
-  x_test.tofile(os.path.join(os.getcwd(), 'data/cat_faces_test'))
+  x_train.tofile(os.path.join(os.getcwd(), 'data/train_fragments'))
+  x_test.tofile(os.path.join(os.getcwd(), 'data/test_fragments'))
