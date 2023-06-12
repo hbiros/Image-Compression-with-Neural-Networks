@@ -46,14 +46,14 @@ upsamp_layer_3 = UpSampling2D(pool_factor, name='upsamp_layer_3')(unconv_layer_2
 from keras import backend as K
 
 def custom_activation(x):
-    return K.sigmoid(x/2)
+    return K.sigmoid(x/10)
 
 output_layer = Conv2D(3, (3,3), padding='same', activation=custom_activation, name='output_layer')(upsamp_layer_3)
 # output_layer = Conv2D(3, (3,3), padding='same', activation='sigmoid', name='output_layer')(upsamp_layer_3)
 
 model = Model(input_layer, output_layer)
 
-opt = keras.optimizers.Adam(learning_rate=0.0005)
+opt = keras.optimizers.Adam(learning_rate=0.001)
 # model.compile(optimizer=opt, loss='mse', run_eagerly=True, metrics=[PUPieAppMetric()])
 model.compile(optimizer=opt, loss='mse', run_eagerly=True)
 
