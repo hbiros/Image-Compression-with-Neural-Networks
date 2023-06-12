@@ -1,5 +1,5 @@
 import numpy as np
-import cv2
+from PIL import Image
 import os
 
 # Print iterations progress
@@ -39,11 +39,9 @@ if __name__ == "__main__":
 
   for i, img in enumerate(os.listdir(path)):
     printProgressBar(i+1, length, prefix="Progress", suffix="Complete", length=100)
-    arr = cv2.imread(os.path.join(path, img)) 
+    arr = np.array(Image.open(os.path.join(path, img)))
     if arr is None:
       continue
-    # if arr.shape != (64, 64, 3):
-    #   continue
     cats.append(arr)
 
   cats = np.array(cats)# (1, 64, 64, 3)
