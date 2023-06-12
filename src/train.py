@@ -2,6 +2,10 @@ from image_processing.prepare_data import load_data
 from image_processing.visualisation import show_data
 import click
 import numpy as np 
+import pickle
+from datetime import datetime
+from keras.callbacks import CSVLogger
+
 
 @click.command()
 @click.option(
@@ -25,7 +29,13 @@ import numpy as np
               default=32, 
               type=int
               )
-def train(model, epochs, batch_size):
+@click.option(
+              '-s',
+              '--save',
+              prompt='Save model', 
+              is_flag=True
+              )
+def train(model, epochs, batch_size, save):
 
   if(model == 1):
     from models.model_1 import model, encoder 
@@ -34,12 +44,16 @@ def train(model, epochs, batch_size):
   elif(model == 3):
     from models.model_3 import model, encoder
   else:
-      raise ValueError('Model {} does not exits'.format(model))  
+    raise ValueError('Model {} does not exits'.format(model))  
   
-  model.summary()
-
   x_test, x_train = load_data(train_data="data/cat_faces_train", test_data="data/cat_faces_test")
-  model.fit(x_train, x_train, epochs=epochs, batch_size=batch_size, validation_data=(x_test, x_test))
+  
+  time = datetime.now().strftime("%H_%M_%S")
+  log_name = 'log_' + time + '.csv'
+  csv_logger = CSVLogger(log_name, append=True, separator=',')
+  
+  history = model.fit(x_train, x_train, epochs=epochs, batch_size=batch_size, validation_data=(x_test, x_test), callbacks=[csv_logger])
+  
   encoded_cats = encoder.predict(x_test)
   encoded_cats = encoded_cats.reshape(len(encoded_cats),-1)
   print(encoded_cats.shape)
@@ -47,9 +61,13 @@ def train(model, epochs, batch_size):
   np.clip(reconstructed_cats, 0, 1)
   print(reconstructed_cats.shape)
   show_data(x_test, reconstructed_cats)
-  ans = input("Save model? (y/n): ").upper()
-  if ans == 'Y':
-    model.save('.')
+
+  if save:
+    model_name="model_"+time
+    model_history="history_"+time
+    model.save(model_name)
+    with open(model_history, 'wb') as file_pi:
+      pickle.dump(history.history, file_pi)
 
 
 if __name__ == "__main__":
