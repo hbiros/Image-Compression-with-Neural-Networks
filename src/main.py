@@ -2,6 +2,7 @@ import numpy as np
 from PIL import Image
 import click
 import keras
+import matplotlib.pyplot as plt
 # from pupieapp_metric.pu_pieapp_metric import PUPieAppMetric
 
 @click.command()
@@ -57,7 +58,7 @@ def split_and_merge_image(model, img_name):
         index = 0
         for i in range(0, cropped_image.width, chunk_size):
             for j in range(0, cropped_image.height, chunk_size):
-                fragment_image = Image.fromarray(np.uint8(reconstructed[index]*255))
+                fragment_image = Image.fromarray(np.uint8(reconstructed[index]))
                 merged_image.paste(fragment_image, (i, j))
                 index += 1
 
