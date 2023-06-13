@@ -167,3 +167,10 @@ cats/
 
 # data
 data/
+
+# log files and history
+history_*
+log_*
+
+# model directories
+model_*/
