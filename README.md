@@ -2,7 +2,7 @@
 
 # Data
 * for already prepared data use src/resources/get_images.py
-* alternatively; in order to use own data:
+* alternatively in order to use own data:
   * add images to /src/resources/images with correct labels example: "image1.jpg" (labels have to be ordered)
   * use src/resources/prep_images.py to prepare data
 
