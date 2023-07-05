@@ -1,9 +1,9 @@
+gdown
+keras
 numpy
-imageio
+Pillow
 matplotlib
 torch
-pandas
-scipy
+gdown
+click
 tensorflow
-opencv-python
-keras
