@@ -8,6 +8,13 @@ Dependencies can be installed by running:
 ```
 pip install -r requirements.txt
 ```
+## Data
+For the training purposes, we provide a dataset of about 100,000 image fragments with a resolution of 64x64 pixels. To download and prepare the data, run:
+```
+python src/resources/get_images.py
+```
+Note that by default the data will be stored in a numpy binary file in the **data** folder.
+
 ## Training the models
 ```
 python src/train.py 
