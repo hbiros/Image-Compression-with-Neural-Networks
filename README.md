@@ -1,4 +1,13 @@
 # Image-Compression-with-Neural-Networks
+This repository contains Convolutional Neural Network (CNN) models for image compression using the autoencoder architecture. The models are designed to reduce the size of images while preserving their visual quality. Four different models are provided, each offering varying compression ratios:
+
+1. **model_1** - 6x Compression Ratio
+2. **model_2** - 1.5x Compression Ratio
+3. **model_3** - 6x Compression Ratio
+4. **model_4** - 24x Compression Ratio
+
+Please note that all models process the images in 64x64 pixel fragments. Larger images will be split into multiple fragments for processing, and the resulting compressed image will be reassembled accordingly.
+
 ## Usage
 Clone the repository:
 ```
@@ -31,9 +40,17 @@ Options:<br />
 ```
 python src/main.py
 ```
+This script takes model parameters and an image path as arguments.
+
+The input image is processed by splitting it into non-overlapping 64x64 pixel fragments. Each fragment is individually passed through the loaded models for compression, resulting in a compressed representation of the fragment.
+
+After the compression process, the compressed fragments are reconstructed by decoding them using the decoder portion of the autoencoder models. The reconstructed fragments are then reassembled to produce the final reconstructed image. The reconstructed image will be saved under the original name with the suffix "_reconstructed".
+
+To ensure proper alignment with the 64x64 pixel grid, the final reconstructed image may be clipped to a size that is a multiple of 64x64 pixels.
+
 Options:<br />
-**-m**, **--model** - Name of the folder containing the model parameters.
-**-i**, **--img_name** - Name of image to be processed by compression. The reconstructed image will be saved under the original name with the suffix "_reconstructed".
+**-m**, **--model** - Name of the folder containing the model parameters. <br />
+**-i**, **--img_name** - Name of image to be processed by compression. <br />
 ## Weights for PU-PieApp metric
 Weights that are used by PU-PieApp metric can be downloaded from here: https://github.com/gfxdisp/pu_pieapp/releases/download/v0.0.1/pupieapp_weights.pt
 
