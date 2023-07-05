@@ -12,7 +12,7 @@ pip install -r requirements.txt
 ```
 python src/train.py 
 ```
-Options:
+Options:<br />
 **-m**, **--model** - Specify the name of the model you want to train (models are placed in the src/models/ package). <br />
 **-e**, **--epochs** - Numer of epochs. <br />
 **-bs**, **--batch_size** - Batch size. <br />
@@ -24,7 +24,7 @@ Options:
 ```
 python src/main.py
 ```
-Options:
+Options:<br />
 **-m**, **--model** - Name of the folder containing the model parameters.
 **-i**, **--img_name** - Name of image to be processed by compression. The reconstructed image will be saved under the original name with the suffix "_reconstructed".
 ## Weights for PU-PieApp metric
