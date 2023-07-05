@@ -174,3 +174,6 @@ log_*
 
 # model directories
 model_*/
+
+# directory with image pairs
+original_and_reconstructed_images/*
